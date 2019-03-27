@@ -1,8 +1,8 @@
 """ IMPORT LIBRARIES """
 from datetime import datetime
-from typing import List
+from typing import List, TypeVar
 
-__all__ = ["LWW_Set"]
+LWW_Set = TypeVar('LWW_Set')
 
 class _LWW_Set__LWW_Element(object):
 	"""docstring for _LWW_Set__LWW_Element"""
@@ -74,3 +74,5 @@ class LWW_Set():
 		if self.__debug:
 			print(self)
 		return self
+
+	# TODO: merge method, updating both copies
