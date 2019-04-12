@@ -14,9 +14,16 @@ Operation based implementaion allows us to revert the set to a given time in his
 I don't know.  But if you like what I do, feel free to take it and use it.
 
 ## But Why?
-I originally encountered this problem in a technical challenge.  I got some feedbacks but I do not think they are adequate and to the point.  So this is my attempt to show my true colour and in the hope that I will create something useful.
+I originally encountered this problem in a technical challenge.  I got some feedbacks which I initially agreed, but later find them inadequate and missing the mark on my second thought.  So this is my attempt to show my true colour and in the hope that I will create something useful.
 
 I also have many free time in my hands, so why not?
 
 ## Limitations
 - This implementation can only handle hashable types.
+
+## How to Test?
+1. Open your commend line tool.
+2. Navigate to the directory where you cloned the repository.
+3. Type `python lww_set_test.py` or `python3 lww_set_test.py`.
+4. Watch the magic.
+Please note that I have verbosity turned on by default because I am a wordy person.
