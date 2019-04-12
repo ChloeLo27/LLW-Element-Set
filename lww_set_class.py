@@ -71,10 +71,7 @@ class LWW_Set():
 	def add(self, element) -> LWW_Set:
 		"""
 		add element to the set
-
-		NOTE
-		====
-		Cannot accept unhashable types
+		NOTE: cannot accept unhashable types
 		"""
 
 		if not isinstance(element, Hashable):
@@ -84,7 +81,7 @@ class LWW_Set():
 		if not element_in_add_set:
 			self.__add_set.append(__LWW_Element(element))
 		else:
-			[x for x in self.__add_set if x.element == element][0].update_timestamp()
+			element_in_add_set[0].update_timestamp()
 		if self.__debug:
 			print(self)
 		return self
