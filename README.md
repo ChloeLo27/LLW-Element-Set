@@ -17,3 +17,6 @@ I don't know.  But if you like what I do, feel free to take it and use it.
 I originally encountered this problem in a technical challenge.  I got some feedbacks but I do not think they are adequate and to the point.  So this is my attempt to show my true colour and in the hope that I will create something useful.
 
 I also have many free time in my hands, so why not?
+
+## Limitations
+- This implementation can only handle hashable types.

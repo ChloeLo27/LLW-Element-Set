@@ -77,6 +77,12 @@ class TestTimeMachineMethods(unittest.TestCase):
 		self.assertEqual(self.new_set.exist("d", retrieval_time), False)
 		self.assertEqual(self.new_set.exist("e", retrieval_time), False)
 		self.assertEqual(self.new_set.exist("f", retrieval_time), False)
+		self.assertEqual(self.new_set.exist("a"), True)
+		self.assertEqual(self.new_set.exist("b"), True)
+		self.assertEqual(self.new_set.exist("c"), True)
+		self.assertEqual(self.new_set.exist("d"), True)
+		self.assertEqual(self.new_set.exist("e"), True)
+		self.assertEqual(self.new_set.exist("f"), True)
 
 	def test_retrieval_in_given_time(self):
 		self.new_set.add("a")
@@ -87,6 +93,36 @@ class TestTimeMachineMethods(unittest.TestCase):
 		self.new_set.add("e")
 		self.new_set.add("f")
 		self.assertEqual(self.new_set.get(retrieval_time), set(["a", "b", "c"]))
+
+	def test_existence_in_given_time_after_remove(self):
+		self.new_set.add("a")
+		self.new_set.add("b")
+		self.new_set.add("c")
+		retrieval_time = datetime.now()
+		self.new_set.add("d")
+		self.new_set.remove("a")
+		self.new_set.add("e")
+		self.assertEqual(self.new_set.exist("a", retrieval_time), True)
+		self.assertEqual(self.new_set.exist("b", retrieval_time), True)
+		self.assertEqual(self.new_set.exist("c", retrieval_time), True)
+		self.assertEqual(self.new_set.exist("d", retrieval_time), False)
+		self.assertEqual(self.new_set.exist("e", retrieval_time), False)
+		self.assertEqual(self.new_set.exist("a"), False)
+		self.assertEqual(self.new_set.exist("b"), True)
+		self.assertEqual(self.new_set.exist("c"), True)
+		self.assertEqual(self.new_set.exist("d"), True)
+		self.assertEqual(self.new_set.exist("e"), True)
+
+	def test_retrieval_in_given_time_after_removeal(self):
+		self.new_set.add("a")
+		self.new_set.add("b")
+		self.new_set.add("c")
+		retrieval_time = datetime.now()
+		self.new_set.add("d")
+		self.new_set.remove("a")
+		self.new_set.add("e")
+		self.assertEqual(self.new_set.get(retrieval_time), set(["a", "b", "c"]))
+		self.assertEqual(self.new_set.get(), set(["b", "c", "d", "e"]))
 
 
 
