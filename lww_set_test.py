@@ -57,6 +57,16 @@ class TestLWWSetBasicMethods(unittest.TestCase):
 		self.new_set.add(34)
 		self.assertEqual(self.new_set.get(), set(["test", "another", 34]))
 
+	def test_chain_add(self):
+		self.new_set.add("another").add("and another")
+		self.assertEqual(self.new_set.get(), set(["test", "another", "and another"]))
+
+	def test_chain_remove(self):
+		self.new_set.add("another").add(34).add(12345)
+		self.new_set.remove(34).remove(12345)
+		self.assertEqual(self.new_set.get(), set(["test", "another"]))
+		self.assertEqual(self.new_set.exist(34), False)
+
 
 class TestTimeMachineMethods(unittest.TestCase):
 
