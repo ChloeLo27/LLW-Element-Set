@@ -133,18 +133,37 @@ class TestTimeMachineMethods(unittest.TestCase):
 		self.new_set.add("e")
 		self.assertEqual(self.new_set.get(retrieval_time), set(["a", "b", "c"]))
 		self.assertEqual(self.new_set.get(), set(["b", "c", "d", "e"]))
+		
 
+# merge behavkour
+class TestLWWSetMergeBehaviour(unittest.TestCase):
 
+	def setUp(self):
+		self.set_1 = LWW_Set()
+		self.set_1.add("a")
+		self.set_1.add("b")
+		self.set_1.add("c")
+		self.timestamp_before_first_add = datetime.now()
+		self.set_2 = LWW_Set()
+		self.set_2.add("c")
+		self.set_2.add("d")
+		self.set_2.add("e")
+		self.timestamp_before_first_remove = datetime.now()
+		self.set_2.remove("a")
+		self.timestamp_before_second_add = datetime.now()
+		self.set_2.add("a")
+		self.set_1.merge(self.set_2)
 
-# TODO: merge behavkour
-# class TestLWWSetMergeBehaviour(unittest.TestCase):
+	def test_merge_2_sets(self):
+		self.assertEqual(self.set_1.get(), set(["a", "b", "c", "d", "e"]))
 
-# 	def setUp(self):
-# 		self.set_1 = LWW_Set()
-# 		self.set_2 = LWW_Set()
+	def test_merge_2_sets_with_time(self):
+		self.assertEqual(self.set_1.get(self.timestamp_before_first_add), set(["a", "b", "c"]))
+		self.assertEqual(self.set_1.get(self.timestamp_before_first_remove), set(["a", "b", "c", "d", "e"]))
+		self.assertEqual(self.set_1.get(self.timestamp_before_second_add), set(["b", "c", "d", "e"]))
 
-# 	def test_something(self):
-# 		self.assertEqual(1, 1)
+	def test_merge_convergence(self):
+		self.assertEqual(self.set_1.get(), self.set_2.get())
 
 if __name__ == '__main__':
 	unittest.main(verbosity=2)
