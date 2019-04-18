@@ -6,7 +6,12 @@ from collections import Hashable
 LWW_Set = TypeVar('LWW_Set')
 
 class _LWW_Set__LWW_Element(object):
-	"""docstring for _LWW_Set__LWW_Element"""
+	"""Private class for the LWW element
+
+	Keyword arguments:
+	element -- the element to be added to the set
+	with_timestamps -- the initial set of timestamps to be used (default None)
+	"""
 	def __init__(self, element, with_timestamps=None):
 		self.element = element
 		if with_timestamps is None:
@@ -18,9 +23,11 @@ class _LWW_Set__LWW_Element(object):
 		return "(element: {}, timestamps: {})".format(self.element, self.__timestamps)
 
 	def update_timestamp(self):
+		"""Add the timestamp of the instance when this is called."""
 		self.__timestamps.append(datetime.now())
 
 	def last_timestamp_before(self, timestamp):
+		"""Retrieve the last timestamp before the given timestamp; return None if there is none."""
 		timestamps_before = [t for t in self.__timestamps if t <= timestamp]
 		if timestamps_before:
 			return max(timestamps_before)
@@ -28,6 +35,7 @@ class _LWW_Set__LWW_Element(object):
 			return None
 
 	def merge_timestamps(self, element2):
+		"""Merge the timestamps of this element and the other one, and update the stored timestamps of both copies."""
 		if self.element != element2.element:
 			raise ValueError("Elements mismatch.  First: {}, second: {}.".format(self.element, element2.element))
 		timestamps_1 = set(self.__timestamps)
@@ -36,21 +44,33 @@ class _LWW_Set__LWW_Element(object):
 		self.__timestamps = union_timestamp
 		element2.__timestamps = union_timestamp
 
+	def add_timestamps(self, timestamps):
+		"""Merge the timestamps of this element with the given list of timestamps."""
+		union_timestamp = sorted(list(set(self.__timestamps).union(set(timestamps))))
+		self.__timestamps = union_timestamp
+
 	@property
 	def last_timestamp(self):
+		"""Return the last timestamp of the element."""
 		return max(self.__timestamps)
 
 	@property
 	def first_timestamp(self):
+		"""Return the first timestamp of the element."""
 		return min(self.__timestamps)
 
 	@property
 	def timestamps(self):
+		"""Return the list of timestamps of the element."""
 		return self.__timestamps
 
 
 class LWW_Set():
-	"""docstring for LWW_Set"""
+	"""LWW Set class.
+
+	Keyword arguments:
+	debug -- set debug mode (default False)
+	"""
 	def __init__(self, debug=False):
 		self.__add_set = []
 		self.__remove_set = []
@@ -60,6 +80,11 @@ class LWW_Set():
 		return "LWW Set\n=======\nADD SET: {}\n\nREMOVE SET: {}\n=======\n".format(self.__add_set, self.__remove_set)
 
 	def _element_in_add_set(self, element, timestamp=None):
+		"""Retrieve the element with the timestamps in the add set.
+
+		Keyword arguments:
+		timestamp -- retrieve only the element that is added before the given timestamp (default None)
+		"""
 		if timestamp is None:
 			result = [x for x in self.__add_set if x.element == element]
 		else:
@@ -69,6 +94,11 @@ class LWW_Set():
 		return None
 
 	def _element_in_remove_set(self, element, timestamp=None):
+		"""Retrieve the element with the timestamps in the remove set.
+
+		Keyword arguments:
+		timestamp -- retrieve only the element that is added before the given timestamp (default None)
+		"""
 		if timestamp is None:
 			result = [x for x in self.__remove_set if x.element == element]
 		else:
@@ -79,15 +109,20 @@ class LWW_Set():
 
 	@property
 	def _add_set_elements(self):
+		"""Retrieve the elements without the timestaps in the add set."""
 		return [x.element for x in self.__add_set]
 
 	@property
 	def _remove_set_elements(self):
+		"""Retrieve the elements without the timestaps in the remove set."""
 		return [x.element for x in self.__remove_set]
 	
 
 	def exist(self, element, timestamp=None):
-		""" check whether an element exists in the LWW set of not """
+		"""Check whether an element exists in the LWW set of not.
+
+		Keyword arguments:
+		timestamp -- the given timestamp (default None)"""
 
 		element_in_add_set = self._element_in_add_set(element, timestamp=timestamp)
 		element_in_remove_set = self._element_in_remove_set(element, timestamp=timestamp)
@@ -98,18 +133,22 @@ class LWW_Set():
 			return True
 		if timestamp is None:
 			return element_in_remove_set.last_timestamp < element_in_add_set.last_timestamp
+		return element_in_remove_set.last_timestamp_before(timestamp) < element_in_add_set.last_timestamp_before(timestamp)
 
 	def get(self, timestamp=None) -> List[__LWW_Element]:
-		"""
-		return a list contianing the elements which should be in the set right before the given timestamp;
-		return the most updated state if no timestamp given
+		"""Return a list contianing the elements which should be in the set right before the given timestamp;
+		return the most updated state if no timestamp given.
+
+		Keyword argument:
+		timestamp -- the given timestamp (default None)
 		"""
 		return set([x.element for x in self.__add_set if self.exist(x.element, timestamp)])
 		
 	def add(self, element, with_timestamps=None) -> LWW_Set:
-		"""
-		add element to the set
-		NOTE: cannot accept unhashable types
+		"""Add element to the set; cannot accept unhashable types.
+
+		Keyword argument:
+		with_timestamps -- the timestamps to be associated with the element.
 		"""
 
 		if not isinstance(element, Hashable):
@@ -118,26 +157,34 @@ class LWW_Set():
 		element_in_add_set = self._element_in_add_set(element)
 		if element_in_add_set is None:
 			self.__add_set.append(__LWW_Element(element, with_timestamps))
-		else:
+		elif with_timestamps is None:
 			element_in_add_set.update_timestamp()
+		else:
+			element_in_add_set.add_timestamps(with_timestamps)
 		if self.__debug:
 			print(self)
 		return self
 
 	def remove(self, element, with_timestamps=None) -> LWW_Set:
-		""" remove element from the set """
+		"""Remove element from the set; cannot accept unhashable types.
+
+		Keyword argument:
+		with_timestamps -- the timestamps to be associated with the element.
+		"""
 
 		element_in_remove_set = self._element_in_remove_set(element)
-		if element_in_remove_set is not None:
+		if element_in_remove_set is None:
+			self.__remove_set.append(__LWW_Element(element, with_timestamps))
+		elif with_timestamps is None:
 			element_in_remove_set.update_timestamp()
 		else:
-			self.__remove_set.append(__LWW_Element(element, with_timestamps))
+			element_in_remove_set.add_timestamps(with_timestamps)
 		if self.__debug:
 			print(self)
 		return self
 
 	def merge(self, lww_set_2) -> LWW_Set:
-		""" merge with another set """
+		"""Merge with another LWW set."""
 
 		# add set merge
 		add_set_1 = set(self._add_set_elements)

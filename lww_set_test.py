@@ -103,6 +103,7 @@ class TestTimeMachineMethods(unittest.TestCase):
 		self.new_set.add("e")
 		self.new_set.add("f")
 		self.assertEqual(self.new_set.get(retrieval_time), set(["a", "b", "c"]))
+		self.assertEqual(self.new_set.get(), set(["a", "b", "c", "d", "e", "f"]))
 
 	def test_existence_in_given_time_after_remove(self):
 		self.new_set.add("a")
